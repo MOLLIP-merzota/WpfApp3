@@ -92,6 +92,18 @@ namespace WpfApp3
             customMessageBox.ShowDialog();
         }
 
+        private void Button2_Click(object sender, RoutedEventArgs e)
+        {
+            PrintDialog printDialog = new PrintDialog();
+            
+            if (printDialog.ShowDialog() == true)
+            {
+                FlowDocument flowDocument = new FlowDocument(new Paragraph(new Run(TextBox.Text)));
+                IDocumentPaginatorSource idpSource = flowDocument;
+                printDialog.PrintDocument(idpSource.DocumentPaginator, "Printing Document");
+            }
+            
+        }
         
     }
 }
