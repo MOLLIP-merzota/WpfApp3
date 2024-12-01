@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Герман\\Documents\\RiderProjects\\WpfApp3\\WpfApp3\\WpfApp3.csproj",
+      "projectUniqueName": "C:\\Users\\Герман\\RiderProjects\\WpfApp3\\WpfApp3\\WpfApp3.csproj",
       "projectName": "WpfApp3",
-      "projectPath": "C:\\Users\\Герман\\Documents\\RiderProjects\\WpfApp3\\WpfApp3\\WpfApp3.csproj",
+      "projectPath": "C:\\Users\\Герман\\RiderProjects\\WpfApp3\\WpfApp3\\WpfApp3.csproj",
       "packagesPath": "C:\\Users\\Герман\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Герман\\Documents\\RiderProjects\\WpfApp3\\WpfApp3\\obj\\",
+      "outputPath": "C:\\Users\\Герман\\RiderProjects\\WpfApp3\\WpfApp3\\obj\\",
       "projectStyle": "PackageReference",
       "UsingMicrosoftNETSdk": false,
       "configFilePaths": [

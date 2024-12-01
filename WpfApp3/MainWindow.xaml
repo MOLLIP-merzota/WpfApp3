@@ -32,6 +32,27 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style TargetType="ToggleButton">
+            <Setter Property="Background" Value="#1ABC9C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
         <Style TargetType="Button">
             <Setter Property="Background" Value="#1ABC9C"/>
             <Setter Property="Foreground" Value="White"/>
@@ -54,16 +75,43 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
+    
     <Grid>
-        <Button Content="Печать" Width="150" Height="50" Margin="70,350,150,5" Click="Button2_Click"/>
-        <Button Content="Добавить файл" Width="150" Height="50" Margin="0,350,450,5" Click="Button_Click"/>
-        <RichTextBox x:Name="RichTextBox" HorizontalAlignment="Left" Margin="50,43,0,0" VerticalAlignment="Top" Width="700" Height="290" AcceptsReturn="True" Opacity="0" Visibility="Collapsed" />
-        <Button Content="Сохранить изменения" Width="150" Height="50" Margin="450,350,180,5" Click="Button1_Click"/>
-        
-        <ComboBox x:Name="FontStyleComboBox" Width="150" Height="30" SelectionChanged="FontStyleComboBox_SelectionChanged" Margin="0, 10, 450, 380">
-            <ComboBoxItem Content="Normal" />
-            <ComboBoxItem Content="Italic" />
-            <ComboBoxItem Content="Bold" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> 
+            <RowDefinition Height="*"/>    
+            <RowDefinition Height="Auto"/> 
+        </Grid.RowDefinitions>
+        <ToolBar Grid.Row="0">
+        <ComboBox Name="Font" Width="150" SelectionChanged="Font_SelectionChanged">
+            <ComboBoxItem>Arial</ComboBoxItem>
+            <ComboBoxItem>Times New Roman</ComboBoxItem>
+            <ComboBoxItem>Verdana</ComboBoxItem>
+        </ComboBox>  
+        <!-- Размер шрифта -->
+        <ComboBox Name="FontSize" Width="60" SelectionChanged="FontSize_SelectionChanged">
+            <ComboBoxItem>12</ComboBoxItem>
+            <ComboBoxItem>14</ComboBoxItem>
+            <ComboBoxItem>16</ComboBoxItem>
         </ComboBox>
+        <!-- Жирный,курсив,подчеркнутый -->
+        <ToggleButton Name="BoldButton" Click="BoldButton_Click">Жирный</ToggleButton>
+        <ToggleButton Name="ItalicButton" Click="ItalicButton_Click">Курсив</ToggleButton>
+        <ToggleButton Name="UnderlineButton" Click="UnderlineButton_Click">Подчеркнутый</ToggleButton>
+        <!-- Выравнивание -->
+        <Button Name="LeftButton" Click="LeftButton_Click">По левому краю</Button>
+        <Button Name="CenterButton" Click="CenterButton_Click">По центру</Button>
+        <Button Name="RightButton" Click="RightButton_Click">По правому краю</Button>
+        </ToolBar>
+
+
+        <RichTextBox x:Name="RichTextBox" Grid.Row="1" Grid.Column="0" Margin="10" AcceptsReturn="True" Opacity="0" Visibility="Collapsed" />
+
+        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+            <Button Content="Добавить файл" Width="150" Height="50" Margin="15" Click="Button_Click"/>
+            <Button Content="Сохранить изменения" Width="150" Height="50" Margin="15" Click="Button1_Click"/>
+            <Button Content="Печать" Width="150" Height="50" Margin="15" Click="Button2_Click"/>
+        </StackPanel>
+        
     </Grid>
 </Window>

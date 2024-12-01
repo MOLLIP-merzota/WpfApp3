@@ -21,13 +21,14 @@ namespace WpfApp3
     {
         private string _filePath;
         private string _fileContent;
-
+        private string selectedFilePath;
         public MainWindow()
         {
             InitializeComponent();
             Loaded += Window_Loaded;
         }
-        
+
+        //анимации
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Создаем трансформацию вращения
@@ -56,18 +57,20 @@ namespace WpfApp3
             rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
             this.BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
         }
-        
-        
-        
+
+
+
         private MainWindow(string fileContent, string filePath)
         {
             InitializeComponent();
             SetRichTextBoxContent(fileContent);
             _filePath = filePath;
         }
+
+        //кнопка выбора файла
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            
+
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
             if (openFileDialog.ShowDialog() == true)
@@ -82,53 +85,54 @@ namespace WpfApp3
                 DoubleAnimation fadeInAnimation = new DoubleAnimation(0, 1, TimeSpan.FromSeconds(1.5));
                 RichTextBox.BeginAnimation(OpacityProperty, fadeInAnimation);
             }
-        }
-        
-        
-        private void Button1_Click(object sender, RoutedEventArgs e)
-        {
-            string content = GetRichTextBoxContent();
-            File.WriteAllText(_filePath, content);
-            CustomMessageBox customMessageBox = new CustomMessageBox("Сохранения изменены.");
-            customMessageBox.ShowDialog();
+
         }
 
-        private void Button2_Click(object sender, RoutedEventArgs e)
+        //кнопка сохранения изменений
+        private void Button1_Click(object sender, RoutedEventArgs e)
         {
-            PrintDialog printDialog = new PrintDialog();
-            if (printDialog.ShowDialog() == true)
+            if (!string.IsNullOrEmpty(selectedFilePath))
             {
-                FlowDocument flowDocument = new FlowDocument(new Paragraph(new Run(GetRichTextBoxContent())));
-                IDocumentPaginatorSource idpSource = flowDocument;
-                printDialog.PrintDocument(idpSource.DocumentPaginator, "Printing Document");
+                try
+                {
+                    var textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
+                    using (var fileStream = new FileStream(selectedFilePath, FileMode.Create))
+                    {
+                        textRange.Save(fileStream, DataFormats.XamlPackage);
+                    }
+                    CustomMessageBox customMessageBox = new CustomMessageBox("Сохранения изменены.");
+                    customMessageBox.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при сохранении файла: {ex.Message}");
+                }
+            }
+            else
+            { 
+                CustomMessageBox customMessageBox = new CustomMessageBox("Ты че...Долбаеб?");
+                customMessageBox.ShowDialog();
             }
             
         }
-        private void FontStyleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (RichTextBox.Selection != null)
-            {
-                string selectedStyle = (FontStyleComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-                if (selectedStyle != null)
-                {
-                    TextSelection selectedText = RichTextBox.Selection;
-                    switch (selectedStyle)
-                    {
-                        case "Normal":
-                            selectedText.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Normal);
-                            selectedText.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-                            break;
-                        case "Italic":
-                            selectedText.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
-                            break;
-                        case "Bold":
-                            selectedText.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);
-                            break;
-                    }
-                }
+        //кнопка печати
+        private void Button2_Click(object sender, RoutedEventArgs e)
+        {
+            PrintDialog printDialog = new PrintDialog();
+
+            if (printDialog.ShowDialog() == true)
+            {
+                FlowDocument flowDocument = new FlowDocument(new Paragraph(new Run(new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd).Text)));
+                flowDocument.ColumnWidth = double.MaxValue;
+
+                IDocumentPaginatorSource idpSource = flowDocument;
+                printDialog.PrintDocument(idpSource.DocumentPaginator, "Печать документа");
             }
+
         }
+
+
 
         // Вспомогательные методы для установки и получения содержимого RichTextBox
         private void SetRichTextBoxContent(string text)
@@ -142,6 +146,72 @@ namespace WpfApp3
             TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
             return textRange.Text.TrimEnd('\r', '\n'); // Удаляем лишние переводы строк
         }
-    }
+
+
+
         
+        private void Font_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (RichTextBox.Selection != null)
+            {
+                RichTextBox.Selection.ApplyPropertyValue(TextElement.FontFamilyProperty,
+                    ((ComboBoxItem)Font.SelectedItem).Content);
+            }
+        }
+
+        
+        private void FontSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (RichTextBox.Selection != null)
+            {
+                RichTextBox.Selection.ApplyPropertyValue(TextElement.FontSizeProperty,
+                    Convert.ToDouble(((ComboBoxItem)FontSize.SelectedItem).Content));
+            }
+        }
+
+        
+        private void BoldButton_Click(object sender, RoutedEventArgs e)
+        {
+            EditingCommands.ToggleBold.Execute(null, RichTextBox);
+        }
+
+        
+        private void ItalicButton_Click(object sender, RoutedEventArgs e)
+        {
+            EditingCommands.ToggleItalic.Execute(null, RichTextBox);
+        }
+
+        
+        private void UnderlineButton_Click(object sender, RoutedEventArgs e)
+        {
+            EditingCommands.ToggleUnderline.Execute(null, RichTextBox);
+        }
+
+        
+        private void LeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (RichTextBox.Selection != null)
+            {
+                RichTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Left);
+            }
+        }
+
+        
+        private void CenterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (RichTextBox.Selection != null)
+            {
+                RichTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Center);
+            }
+        }
+
+        
+        private void RightButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (RichTextBox.Selection != null)
+            {
+                RichTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Right);
+            }
+        }
+    }
 }
