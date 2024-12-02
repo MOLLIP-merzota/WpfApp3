@@ -70,7 +70,6 @@ namespace WpfApp3
         //кнопка выбора файла
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
             if (openFileDialog.ShowDialog() == true)
@@ -88,30 +87,29 @@ namespace WpfApp3
 
         }
 
+        
         //кнопка сохранения изменений
         private void Button1_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(selectedFilePath))
+            if (string.IsNullOrEmpty(_filePath))
             {
-                try
-                {
-                    var textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
-                    using (var fileStream = new FileStream(selectedFilePath, FileMode.Create))
-                    {
-                        textRange.Save(fileStream, DataFormats.XamlPackage);
-                    }
-                    CustomMessageBox customMessageBox = new CustomMessageBox("Сохранения изменены.");
-                    customMessageBox.ShowDialog();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка при сохранении файла: {ex.Message}");
-                }
-            }
-            else
-            { 
-                CustomMessageBox customMessageBox = new CustomMessageBox("Ты че...Долбаеб?");
+                CustomMessageBox customMessageBox = new CustomMessageBox("Ты че...Долбаеб??");
                 customMessageBox.ShowDialog();
+            }
+
+            try
+            {
+                using (FileStream fileStream = new FileStream(_filePath, FileMode.Create))
+                {
+                    TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
+                    textRange.Save(fileStream, DataFormats.Rtf);
+                }
+                CustomMessageBox customMessageBox = new CustomMessageBox("Сохранения изменены.");
+                customMessageBox.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при сохранении файла: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             
         }
