@@ -77,13 +77,13 @@ namespace WpfApp3
                 _filePath = openFileDialog.FileName;
                 _fileContent = File.ReadAllText(_filePath);
 
-                // Устанавливаем содержимое файла в RichTextBox
                 SetRichTextBoxContent(_fileContent);
 
                 RichTextBox.Visibility = Visibility.Visible;
                 DoubleAnimation fadeInAnimation = new DoubleAnimation(0, 1, TimeSpan.FromSeconds(1.5));
                 RichTextBox.BeginAnimation(OpacityProperty, fadeInAnimation);
             }
+
 
         }
 
@@ -93,17 +93,15 @@ namespace WpfApp3
         {
             if (string.IsNullOrEmpty(_filePath))
             {
-                CustomMessageBox customMessageBox = new CustomMessageBox("Ты че...Долбаеб??");
+                CustomMessageBox2 customMessageBox = new CustomMessageBox2("Ты че...Долбаеб?.");
                 customMessageBox.ShowDialog();
+                return;
             }
 
             try
             {
-                using (FileStream fileStream = new FileStream(_filePath, FileMode.Create))
-                {
-                    TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
-                    textRange.Save(fileStream, DataFormats.Rtf);
-                }
+                string content = GetRichTextBoxContent();
+                File.WriteAllText(_filePath, content);
                 CustomMessageBox customMessageBox = new CustomMessageBox("Сохранения изменены.");
                 customMessageBox.ShowDialog();
             }
@@ -126,6 +124,11 @@ namespace WpfApp3
 
                 IDocumentPaginatorSource idpSource = flowDocument;
                 printDialog.PrintDocument(idpSource.DocumentPaginator, "Печать документа");
+            }
+            else
+            {
+                CustomMessageBox2 customMessageBox = new CustomMessageBox2("Ты че...Долбаеб?.");
+                customMessageBox.ShowDialog();
             }
 
         }
