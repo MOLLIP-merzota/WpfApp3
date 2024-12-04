@@ -1,19 +1,12 @@
 ﻿using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Media.Animation;
 using Microsoft.Win32;
 using System;
 using System.IO;
-using System.Windows;
-using System.Windows.Media.Animation;
-using Path = System.IO.Path;
 
 namespace WpfApp3
 {
@@ -21,22 +14,19 @@ namespace WpfApp3
     {
         private string _filePath;
         private string _fileContent;
-        private string selectedFilePath;
+
         public MainWindow()
         {
             InitializeComponent();
             Loaded += Window_Loaded;
         }
 
-        //анимации
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Создаем трансформацию вращения
             RotateTransform rotateTransform = new RotateTransform();
             this.RenderTransform = rotateTransform;
             this.RenderTransformOrigin = new Point(0.5, 0.5);
 
-            // Создаем анимацию вращения
             DoubleAnimation rotateAnimation = new DoubleAnimation
             {
                 From = 0,
@@ -45,7 +35,6 @@ namespace WpfApp3
                 RepeatBehavior = new RepeatBehavior(1)
             };
 
-            // Создаем анимацию для свойства Opacity
             DoubleAnimation fadeInAnimation = new DoubleAnimation
             {
                 From = 0.0,
@@ -53,21 +42,10 @@ namespace WpfApp3
                 Duration = new Duration(TimeSpan.FromSeconds(2))
             };
 
-            // Запускаем анимации
             rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
             this.BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
         }
 
-
-
-        private MainWindow(string fileContent, string filePath)
-        {
-            InitializeComponent();
-            SetRichTextBoxContent(fileContent);
-            _filePath = filePath;
-        }
-
-        //кнопка выбора файла
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -78,17 +56,21 @@ namespace WpfApp3
                 _fileContent = File.ReadAllText(_filePath);
 
                 SetRichTextBoxContent(_fileContent);
+                ApplyDefaultFormatting();
 
                 RichTextBox.Visibility = Visibility.Visible;
                 DoubleAnimation fadeInAnimation = new DoubleAnimation(0, 1, TimeSpan.FromSeconds(1.5));
                 RichTextBox.BeginAnimation(OpacityProperty, fadeInAnimation);
             }
-
-
         }
 
-        
-        //кнопка сохранения изменений
+        private void ApplyDefaultFormatting()
+        {
+            TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
+            textRange.ApplyPropertyValue(TextElement.FontFamilyProperty, new FontFamily("Arial"));
+            textRange.ApplyPropertyValue(TextElement.FontSizeProperty, 12.0);
+        }
+
         private void Button1_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_filePath))
@@ -109,10 +91,8 @@ namespace WpfApp3
             {
                 MessageBox.Show($"Ошибка при сохранении файла: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            
         }
 
-        //кнопка печати
         private void Button2_Click(object sender, RoutedEventArgs e)
         {
             PrintDialog printDialog = new PrintDialog();
@@ -127,15 +107,10 @@ namespace WpfApp3
             }
             else
             {
-                CustomMessageBox2 customMessageBox = new CustomMessageBox2("Ты че...Долбаеб?.");
-                customMessageBox.ShowDialog();
+                MessageBox.Show("Печать отменена.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-
         }
 
-
-
-        // Вспомогательные методы для установки и получения содержимого RichTextBox
         private void SetRichTextBoxContent(string text)
         {
             RichTextBox.Document.Blocks.Clear();
@@ -145,12 +120,9 @@ namespace WpfApp3
         private string GetRichTextBoxContent()
         {
             TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
-            return textRange.Text.TrimEnd('\r', '\n'); // Удаляем лишние переводы строк
+            return textRange.Text.TrimEnd('\r', '\n');
         }
 
-
-
-        
         private void Font_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (RichTextBox.Selection != null)
@@ -160,7 +132,6 @@ namespace WpfApp3
             }
         }
 
-        
         private void FontSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (RichTextBox.Selection != null)
@@ -170,25 +141,21 @@ namespace WpfApp3
             }
         }
 
-        
         private void BoldButton_Click(object sender, RoutedEventArgs e)
         {
             EditingCommands.ToggleBold.Execute(null, RichTextBox);
         }
 
-        
         private void ItalicButton_Click(object sender, RoutedEventArgs e)
         {
             EditingCommands.ToggleItalic.Execute(null, RichTextBox);
         }
 
-        
         private void UnderlineButton_Click(object sender, RoutedEventArgs e)
         {
             EditingCommands.ToggleUnderline.Execute(null, RichTextBox);
         }
 
-        
         private void LeftButton_Click(object sender, RoutedEventArgs e)
         {
             if (RichTextBox.Selection != null)
@@ -197,7 +164,6 @@ namespace WpfApp3
             }
         }
 
-        
         private void CenterButton_Click(object sender, RoutedEventArgs e)
         {
             if (RichTextBox.Selection != null)
@@ -206,7 +172,6 @@ namespace WpfApp3
             }
         }
 
-        
         private void RightButton_Click(object sender, RoutedEventArgs e)
         {
             if (RichTextBox.Selection != null)
