@@ -73,18 +73,28 @@
             <ComboBoxItem>12</ComboBoxItem>
             <ComboBoxItem>14</ComboBoxItem>
             <ComboBoxItem>16</ComboBoxItem>
+            <ComboBoxItem>18</ComboBoxItem>
         </ComboBox>
-        <!-- Жирный,курсив,подчеркнутый -->
+        <!-- Жирный, курсив, подчеркнутый -->
         <ToggleButton Name="BoldButton" Click="BoldButton_Click">Жирный</ToggleButton>
         <ToggleButton Name="ItalicButton" Click="ItalicButton_Click">Курсив</ToggleButton>
         <ToggleButton Name="UnderlineButton" Click="UnderlineButton_Click">Подчеркнутый</ToggleButton>
         <!-- Выравнивание -->
-        <Button Name="LeftButton" Click="LeftButton_Click">По левому краю</Button>
-        <Button Name="CenterButton" Click="CenterButton_Click">По центру</Button>
-        <Button Name="RightButton" Click="RightButton_Click">По правому краю</Button>
+        <Button Name="LeftButton" Click="LeftButton_Click">⬅️</Button>
+        <Button Name="CenterButton" Click="CenterButton_Click">↔️</Button>
+        <Button Name="RightButton" Click="RightButton_Click">➡️</Button>
+        <!--Отмена и повтор -->
+        <Button Name="UndoButton" Click="UndoButton_Click">↪️</Button>
+        <Button Name="RedoButton" Click="RedoButton_Click">↩️</Button>
+        <Button Name="PrintPreviewButton" Click="PrintPreviewButton_Click">🖨</Button>
+        <Button Name="ReplaceButton" Click="ReplaceButton_Click">найти</Button>
+        <TextBox x:Name="FindTextBox" Text="Введите текст для поиска" Foreground="Gray" 
+                 GotFocus="FindTextBox_GotFocus" LostFocus="FindTextBox_LostFocus"/>
+        
         </ToolBar>
 
-
+        
+        
         <RichTextBox x:Name="RichTextBox" Grid.Row="1" Grid.Column="0" Margin="10" AcceptsReturn="True" Opacity="0" Visibility="Collapsed" />
 
         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
