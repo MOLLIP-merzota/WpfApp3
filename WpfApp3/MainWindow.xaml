@@ -95,12 +95,17 @@
 
         
         
-        <RichTextBox x:Name="RichTextBox" Grid.Row="1" Grid.Column="0" Margin="10" AcceptsReturn="True" Opacity="0" Visibility="Collapsed" />
+        <RichTextBox Grid.Row="1" Grid.Column="0" x:Name="RichTextBox" Margin="10" Width="793.7" Height="1122.52" AcceptsReturn="True" Opacity="0" Visibility="Collapsed">
+            <FlowDocument PageWidth="793.7" PageHeight="1122.52" ColumnWidth="793.7" ColumnGap="0">
+                
+                <!-- Ваше содержимое здесь -->
+            </FlowDocument>
+        </RichTextBox>
 
         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
             <Button Content="Добавить файл" Width="150" Height="50" Margin="15" Click="Button_Click"/>
             <Button Content="Сохранить изменения" Width="150" Height="50" Margin="15" Click="Button1_Click"/>
-            <Button Content="Печать" Width="150" Height="50" Margin="15" Click="Button2_Click"/>
+            
         </StackPanel>
         
     </Grid>

@@ -13,7 +13,6 @@
         "packagesPath": "C:\\Users\\Герман\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\Герман\\RiderProjects\\WpfApp3\\WpfApp3\\obj\\",
         "projectStyle": "PackageReference",
-        "UsingMicrosoftNETSdk": false,
         "configFilePaths": [
           "C:\\Users\\Герман\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],

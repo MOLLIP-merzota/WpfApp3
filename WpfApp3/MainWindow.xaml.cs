@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -11,34 +12,38 @@ namespace WpfApp3
 {
     public partial class MainWindow : Window
     {
-        private string _filePath; // Путь к текущему открытому файлу
-        private string _fileContent; // Содержимое текущего открытого файла
+        // Поле для хранения пути к выбранному файлу
+        private string selectedFilePath;
 
+        // Конструктор главного окна
         public MainWindow()
         {
             InitializeComponent();
-            Loaded += Window_Loaded; // Обработчик события загрузки окна
+            // Подписка на событие загрузки окна
+            Loaded += Window_Loaded;
         }
 
+        // Обработчик события загрузки окна
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            ApplyWindowAnimations(); // Применение анимаций при загрузке окна
+            // Применение анимаций к окну
+            ApplyWindowAnimations();
         }
 
+        // Метод для применения анимаций к окну
         private void ApplyWindowAnimations()
         {
-            // Создание трансформации вращения и применение её к окну
             var rotateTransform = new RotateTransform();
             RenderTransform = rotateTransform;
             RenderTransformOrigin = new Point(0.5, 0.5);
 
-            // Определение анимации вращения
+            // Анимация вращения
             var rotateAnimation = new DoubleAnimation(0, 360, TimeSpan.FromSeconds(2))
             {
                 RepeatBehavior = new RepeatBehavior(1)
             };
 
-            // Определение анимации появления
+            // Анимация появления
             var fadeInAnimation = new DoubleAnimation(0.0, 1.0, TimeSpan.FromSeconds(2));
 
             // Запуск анимаций
@@ -46,111 +51,163 @@ namespace WpfApp3
             BeginAnimation(UIElement.OpacityProperty, fadeInAnimation);
         }
 
+        // Обработчик нажатия на кнопку для открытия файла
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // Открытие диалога выбора файла для выбора текстового файла
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = "Clown files (*.clw)|*.clw"
+                Filter = "Clown file| *.clw"
             };
 
+            // Проверка, был ли выбран файл
             if (openFileDialog.ShowDialog() == true)
             {
-                _filePath = openFileDialog.FileName; // Сохранение пути к выбранному файлу
-                _fileContent = File.ReadAllText(_filePath); // Чтение содержимого файла
-
-                SetRichTextBoxContent(_fileContent); // Отображение содержимого в RichTextBox
-                ApplyDefaultFormatting(); // Применение стандартного форматирования к тексту
-                AnimateRichTextBoxVisibility(); // Анимация видимости RichTextBox
+                selectedFilePath = openFileDialog.FileName;
+                LoadFileContent();
+            }
+            else
+            {
+                ShowCustomMessageBox("Файл не выбран.");
             }
         }
 
+        // Метод для загрузки содержимого файла
+        private void LoadFileContent()
+        {
+            try
+            {
+                TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
+                using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Open))
+                {
+                    string extension = Path.GetExtension(selectedFilePath).ToLower();
+                    textRange.Load(fileStream, extension == ".rtf" ? DataFormats.Rtf : DataFormats.Text);
+                }
+                AnimateRichTextBoxVisibility();
+            }
+            catch (Exception ex)
+            {
+                ShowCustomMessageBox($"Ошибка при открытии файла: {ex.Message}");
+            }
+        }
+
+        // Метод для анимации видимости RichTextBox
         private void AnimateRichTextBoxVisibility()
         {
-            // Сделать RichTextBox видимым с анимацией появления
             RichTextBox.Visibility = Visibility.Visible;
             var fadeInAnimation = new DoubleAnimation(0, 1, TimeSpan.FromSeconds(1.5));
             RichTextBox.BeginAnimation(OpacityProperty, fadeInAnimation);
         }
 
-        private void ApplyDefaultFormatting()
-        {
-            // Применение стандартного шрифта и размера к тексту в RichTextBox
-            var textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
-            textRange.ApplyPropertyValue(TextElement.FontFamilyProperty, new FontFamily("Arial"));
-            textRange.ApplyPropertyValue(TextElement.FontSizeProperty, 12.0);
-        }
-
+        // Обработчик нажатия на кнопку для сохранения файла
         private void Button1_Click(object sender, RoutedEventArgs e)
         {
-            // Сохранение содержимого RichTextBox обратно в файл
-            if (string.IsNullOrEmpty(_filePath))
+            if (string.IsNullOrEmpty(selectedFilePath))
             {
-                ShowCustomMessageBox("Ты че...Долбаеб?."); // Показать сообщение, если файл не загружен
-                return;
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Clown file| *.clw"
+                };
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    selectedFilePath = saveFileDialog.FileName;
+                }
+                else
+                {
+                    ShowCustomMessageBox("Файл не выбран для сохранения.");
+                    return;
+                }
             }
 
+            SaveFileContent();
+        }
+
+        // Метод для сохранения содержимого файла
+        private void SaveFileContent()
+        {
             try
             {
-                string content = GetRichTextBoxContent(); // Получение текущего содержимого RichTextBox
-                File.WriteAllText(_filePath, content); // Запись содержимого обратно в файл
-                ShowCustomMessageBox("Сохранения изменены."); // Показать сообщение об успешном сохранении
+                TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
+                using (FileStream fileStream = new FileStream(selectedFilePath, FileMode.Create))
+                {
+                    string extension = Path.GetExtension(selectedFilePath).ToLower();
+                    if (extension == ".rtf")
+                    {
+                        textRange.Save(fileStream, DataFormats.Rtf);
+                    }
+                    else
+                    {
+                        using (StreamWriter writer = new StreamWriter(fileStream, Encoding.UTF8))
+                        {
+                            writer.Write(textRange.Text);
+                        }
+                    }
+                }
+
+                ShowCustomMessageBox("Файл успешно сохранен.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при сохранении файла: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowCustomMessageBox($"Ошибка при сохранении файла: {ex.Message}");
             }
         }
 
+        // Обработчик нажатия на кнопку для печати документа
+        private void PrintDocumentButton_Click(object sender, RoutedEventArgs e)
+        {
+            PrintDialog printDialog = new PrintDialog();
+            if (printDialog.ShowDialog() == true)
+            {
+                PrintDocument(printDialog);
+            }
+            else
+            {
+                ShowCustomMessageBox("Печать отменена.");
+            }
+        }
+
+        // Метод для печати документа
+        private void PrintDocument(PrintDialog printDialog)
+        {
+            FlowDocument flowDocument = new FlowDocument();
+            TextRange sourceRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
+            TextRange targetRange = new TextRange(flowDocument.ContentStart, flowDocument.ContentEnd);
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                sourceRange.Save(ms, DataFormats.Rtf);
+                ms.Seek(0, SeekOrigin.Begin);
+                targetRange.Load(ms, DataFormats.Rtf);
+            }
+
+            flowDocument.PageWidth = printDialog.PrintableAreaWidth;
+            flowDocument.PageHeight = printDialog.PrintableAreaHeight;
+            flowDocument.PagePadding = new Thickness(40);
+            flowDocument.ColumnWidth = double.MaxValue;
+
+            IDocumentPaginatorSource idpSource = flowDocument;
+            printDialog.PrintDocument(idpSource.DocumentPaginator, "Печать документа");
+        }
+
+        // Метод для отображения пользовательского сообщения
         private void ShowCustomMessageBox(string message)
         {
-            // Отображение пользовательского сообщения
             CustomMessageBox customMessageBox = new CustomMessageBox(message);
             customMessageBox.ShowDialog();
         }
 
-        private void Button2_Click(object sender, RoutedEventArgs e)
-        {
-            // Открытие диалога печати для печати документа
-            PrintDialog printDialog = new PrintDialog();
-
-            if (printDialog.ShowDialog() == true)
-            {
-                PrintDocument(); // Печать документа, если пользователь подтвердил
-            }
-            else
-            {
-                MessageBox.Show("Печать отменена.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-        private void PrintDocument()
-        {
-            // Создание FlowDocument из содержимого RichTextBox и его печать
-            FlowDocument flowDocument = new FlowDocument(new Paragraph(new Run(GetRichTextBoxContent())))
-            {
-                ColumnWidth = double.MaxValue
-            };
-
-            IDocumentPaginatorSource idpSource = flowDocument;
-            PrintDialog printDialog = new PrintDialog();
-            printDialog.PrintDocument(idpSource.DocumentPaginator, "Печать документа");
-        }
-
+        // Обработчик нажатия на кнопку для поиска текста
         private void ReplaceButton_Click(object sender, RoutedEventArgs e)
         {
-            // Поиск и выделение текста в RichTextBox
             string findText = FindTextBox.Text;
-
             if (!string.IsNullOrEmpty(findText))
             {
                 Find(findText);
             }
         }
 
+        // Метод для поиска текста в документе
         private void Find(string searchText)
         {
-            // Поиск указанного текста в RichTextBox и его выделение
             TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
             string documentText = textRange.Text;
 
@@ -165,13 +222,13 @@ namespace WpfApp3
             }
             else
             {
-                MessageBox.Show("Текст не найден.");
+                ShowCustomMessageBox("Текст не найден.");
             }
         }
 
+        // Метод для получения позиции текста с заданным смещением
         private TextPointer GetTextPositionAtOffset(TextPointer start, int offset)
         {
-            // Получение TextPointer на указанном смещении
             TextPointer current = start;
             int currentOffset = 0;
 
@@ -191,46 +248,29 @@ namespace WpfApp3
             return current;
         }
 
+        // Обработчик получения фокуса текстового поля поиска
         private void FindTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            // Очистка текста-заполнителя при получении фокуса FindTextBox
             if (FindTextBox.Text == "Введите текст для поиска")
             {
                 FindTextBox.Text = "";
                 FindTextBox.Foreground = Brushes.Black;
             }
-            return;
         }
 
+        // Обработчик потери фокуса текстового поля поиска
         private void FindTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            // Восстановление текста-заполнителя, если FindTextBox пуст при потере фокуса
             if (string.IsNullOrWhiteSpace(FindTextBox.Text))
             {
                 FindTextBox.Text = "Введите текст для поиска";
                 FindTextBox.Foreground = Brushes.Gray;
             }
-
-            return;
         }
 
-        private void SetRichTextBoxContent(string text)
-        {
-            // Установка содержимого RichTextBox
-            RichTextBox.Document.Blocks.Clear();
-            RichTextBox.Document.Blocks.Add(new Paragraph(new Run(text)));
-        }
-
-        private string GetRichTextBoxContent()
-        {
-            // Получение текущего содержимого RichTextBox в виде строки
-            TextRange textRange = new TextRange(RichTextBox.Document.ContentStart, RichTextBox.Document.ContentEnd);
-            return textRange.Text.TrimEnd('\r', '\n');
-        }
-
+        // Обработчик изменения выбора шрифта
         private void Font_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Изменение шрифта выделенного текста в RichTextBox
             if (RichTextBox.Selection != null)
             {
                 RichTextBox.Selection.ApplyPropertyValue(TextElement.FontFamilyProperty,
@@ -238,9 +278,9 @@ namespace WpfApp3
             }
         }
 
+        // Обработчик изменения размера шрифта
         private void FontSize_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Изменение размера шрифта выделенного текста в RichTextBox
             if (RichTextBox.Selection != null)
             {
                 RichTextBox.Selection.ApplyPropertyValue(TextElement.FontSizeProperty,
@@ -248,73 +288,73 @@ namespace WpfApp3
             }
         }
 
+        // Обработчик нажатия на кнопку для применения жирного шрифта
         private void BoldButton_Click(object sender, RoutedEventArgs e)
         {
-            // Переключение жирного форматирования для выделенного текста
             EditingCommands.ToggleBold.Execute(null, RichTextBox);
         }
 
+        // Обработчик нажатия на кнопку для применения курсивного шрифта
         private void ItalicButton_Click(object sender, RoutedEventArgs e)
         {
-            // Переключение курсивного форматирования для выделенного текста
             EditingCommands.ToggleItalic.Execute(null, RichTextBox);
         }
 
+        // Обработчик нажатия на кнопку для применения подчеркивания
         private void UnderlineButton_Click(object sender, RoutedEventArgs e)
         {
-            // Переключение подчеркивания для выделенного текста
             EditingCommands.ToggleUnderline.Execute(null, RichTextBox);
         }
 
+        // Обработчик нажатия на кнопку для выравнивания текста по левому краю
         private void LeftButton_Click(object sender, RoutedEventArgs e)
         {
-            // Выравнивание выделенного текста по левому краю
             if (RichTextBox.Selection != null)
             {
                 RichTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Left);
             }
         }
 
+        // Обработчик нажатия на кнопку для выравнивания текста по центру
         private void CenterButton_Click(object sender, RoutedEventArgs e)
         {
-            // Центрирование выделенного текста
             if (RichTextBox.Selection != null)
             {
                 RichTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Center);
             }
         }
 
+        // Обработчик нажатия на кнопку для выравнивания текста по правому краю
         private void RightButton_Click(object sender, RoutedEventArgs e)
         {
-            // Выравнивание выделенного текста по правому краю
             if (RichTextBox.Selection != null)
             {
                 RichTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Right);
             }
         }
 
+        // Обработчик нажатия на кнопку для отмены последнего действия
         private void UndoButton_Click(object sender, RoutedEventArgs e)
         {
-            // Отмена последнего действия в RichTextBox
             if (RichTextBox.CanUndo)
             {
                 RichTextBox.Undo();
             }
         }
 
+        // Обработчик нажатия на кнопку для повторения последнего отмененного действия
         private void RedoButton_Click(object sender, RoutedEventArgs e)
         {
-            // Повтор последнего отмененного действия в RichTextBox
             if (RichTextBox.CanRedo)
             {
                 RichTextBox.Redo();
             }
         }
 
+        // Обработчик нажатия на кнопку для предварительного просмотра печати
         private void PrintPreviewButton_Click(object sender, RoutedEventArgs e)
         {
-            // Показать предварительный просмотр печати документа
-            PrintDocument();
+            PrintDocumentButton_Click(sender, e);
         }
     }
 }
